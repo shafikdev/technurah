@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technurah — Light of Technology | Real-Time Energy & IoT Monitoring</title>
+  <meta name="description" content="Technurah — Light of Technology. IoT-powered energy and production monitoring for factories. Track every watt, every machine, every shift in real time." />
+  <link rel="icon" type="image/png" href="technurah_icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:      #ffffff;
+      --bg-dark:      #f0f6ff;
+      --bg-card:      #ffffff;
+      --bg-card2:     #f4f8ff;
+      --border:       rgba(21, 101, 192, 0.13);
+      --border-blue:  rgba(0, 155, 222, 0.2);
+      --primary:      #1565c0;
+      --primary-dim:  rgba(21, 101, 192, 0.1);
+      --primary-glow: rgba(21, 101, 192, 0.22);
+      --accent:       #0099de;
+      --accent-dim:   rgba(0, 153, 222, 0.1);
+      --accent-glow:  rgba(0, 153, 222, 0.25);
+      --navy:         #0d1f5c;
+      --green:        #059669;
+      --orange:       #d97706;
+      --red:          #dc2626;
+      --text-1:       #0d1f5c;
+      --text-2:       #2d4a7a;
+      --text-3:       #7090b8;
+      --radius:       14px;
+      --shadow:       0 4px 24px rgba(21, 101, 192, 0.1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-1);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--primary-dim); border-radius: 3px; }
+
+    /* ── CIRCUIT GRID BG ── */
+    .circuit-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(21,101,192,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,153,222,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 6%;
+      transition: background 0.3s, box-shadow 0.3s, border-bottom 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 20px rgba(21, 101, 192, 0.08);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700; font-size: 1.45rem;
+      color: var(--text-1); text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+    .nav-logo img {
+      width: 42px; height: 42px; object-fit: contain;
+    }
+    .logo-technurah { color: var(--navy); }
+    .logo-h { color: var(--accent); }
+    .nav-slogan {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem; font-weight: 500;
+      color: var(--text-3); letter-spacing: 0.12em;
+      text-transform: uppercase; margin-left: 2px;
+    }
+    .nav-logo-text { display: flex; flex-direction: column; gap: 1px; }
+    .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
+    .nav-links a {
+      color: var(--text-2); text-decoration: none; font-size: 0.88rem; font-weight: 500;
+      transition: color 0.2s; letter-spacing: 0.02em;
+    }
+    .nav-links a:hover { color: var(--primary); }
+    .nav-cta {
+      padding: 9px 22px;
+      background: var(--primary);
+      color: #fff; border-radius: 8px; font-weight: 700; font-size: 0.875rem;
+      text-decoration: none; transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .nav-cta:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .nav-hamburger span { width: 22px; height: 2px; background: var(--text-2); border-radius: 2px; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 120px 6% 80px;
+      position: relative; overflow: hidden;
+      background: linear-gradient(155deg, #f8fbff 0%, #eef5ff 50%, #f4f8ff 100%);
+    }
+    .hero-grid-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(21,101,192,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,153,222,0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-glow {
+      position: absolute; width: 700px; height: 700px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(21,101,192,0.06) 0%, transparent 65%);
+      top: -200px; right: -150px; pointer-events: none;
+    }
+    .hero-glow-2 {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,153,222,0.05) 0%, transparent 65%);
+      bottom: -100px; left: -100px; pointer-events: none;
+    }
+    .pcb-trace { position: absolute; pointer-events: none; opacity: 0.15; }
+    .pcb-trace-1 {
+      top: 30%; right: 12%; width: 120px; height: 80px;
+      border-right: 2px solid var(--primary); border-top: 2px solid var(--primary);
+      border-radius: 0 12px 0 0;
+    }
+    .pcb-trace-2 {
+      bottom: 25%; left: 8%; width: 80px; height: 60px;
+      border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent);
+      border-radius: 0 0 0 12px;
+    }
+    .hero-inner { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; max-width: 1300px; margin: 0 auto; width: 100%; z-index: 1; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; border-radius: 100px;
+      background: var(--primary-dim); border: 1px solid rgba(21,101,192,0.2);
+      font-size: 0.75rem; font-weight: 600; color: var(--primary);
+      margin-bottom: 24px; width: fit-content;
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em;
+    }
+    .badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+    .hero h1 {
+      font-size: clamp(2.5rem, 4.2vw, 3.8rem); font-weight: 900; line-height: 1.1;
+      margin-bottom: 24px; letter-spacing: -0.02em; color: var(--navy);
+    }
+    .hero h1 .accent-gold { color: var(--primary); }
+    .hero h1 .accent-blue { color: var(--accent); }
+    .hero p {
+      font-size: 1.05rem; color: var(--text-2); margin-bottom: 40px;
+      max-width: 480px; line-height: 1.75;
+    }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-primary {
+      padding: 14px 32px; background: var(--primary);
+      color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.95rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--primary-glow); }
+    .btn-secondary {
+      padding: 14px 32px; background: transparent; color: var(--primary);
+      border: 1.5px solid var(--border-blue); border-radius: 10px; font-weight: 600; font-size: 0.95rem;
+      cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover { background: var(--primary-dim); border-color: rgba(21,101,192,0.35); }
+    .hero-stats {
+      display: flex; gap: 32px; margin-top: 48px; padding-top: 40px;
+      border-top: 1px solid var(--border);
+    }
+    .hero-stat-val { font-size: 1.75rem; font-weight: 800; color: var(--navy); font-family: 'Rajdhani', sans-serif; }
+    .hero-stat-val span { color: var(--primary); }
+    .hero-stat-label { font-size: 0.78rem; color: var(--text-3); font-weight: 500; margin-top: 2px; letter-spacing: 0.03em; }
+
+    /* Hero dashboard preview */
+    .hero-visual { position: relative; }
+    .dashboard-preview {
+      background: #0d1f5c;
+      border: 1px solid rgba(21,101,192,0.3);
+      border-radius: 18px; padding: 20px;
+      box-shadow: 0 20px 60px rgba(13,31,92,0.18), 0 0 0 1px rgba(21,101,192,0.1);
+      position: relative; overflow: hidden;
+    }
+    .dashboard-preview::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(21,101,192,0.08) 0%, rgba(0,153,222,0.05) 100%);
+      pointer-events: none;
+    }
+    .dashboard-preview::after {
+      content: '';
+      position: absolute; top: 0; right: 0; width: 60px; height: 60px;
+      border-top: 2px solid rgba(0,153,222,0.4); border-right: 2px solid rgba(0,153,222,0.4);
+      border-radius: 0 18px 0 0; pointer-events: none;
+    }
+    .dp-corner-bl {
+      position: absolute; bottom: 0; left: 0; width: 50px; height: 50px;
+      border-bottom: 2px solid rgba(21,101,192,0.4); border-left: 2px solid rgba(21,101,192,0.4);
+      border-radius: 0 0 0 18px; pointer-events: none;
+    }
+    .dp-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .dp-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; font-weight: 600; color: rgba(176,200,240,0.7); letter-spacing: 0.08em;
+    }
+    .dp-live {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; font-weight: 700; color: #4ade80; letter-spacing: 0.06em;
+    }
+    .dp-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: pulse-dot 1.5s infinite; }
+    .dp-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .dp-kpi {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 12px;
+      position: relative; overflow: hidden;
+    }
+    .dp-kpi::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,153,222,0.6), transparent);
+    }
+    .dp-kpi-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; color: rgba(176,200,240,0.6); font-weight: 500; margin-bottom: 4px; letter-spacing: 0.06em;
+    }
+    .dp-kpi-val { font-size: 1.1rem; font-weight: 700; font-family: 'Rajdhani', sans-serif; }
+    .dp-kpi-val.gold { color: #60aaff; }
+    .dp-kpi-val.blue { color: #60aaff; }
+    .dp-kpi-val.red { color: #f87171; }
+    .dp-kpi-sub { font-size: 0.62rem; margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+    .dp-kpi-sub.bad { color: #f87171; }
+    .dp-kpi-sub.good { color: #4ade80; }
+    .dp-chart-wrap { border-radius: 10px; overflow: hidden; background: rgba(21,101,192,0.06); padding: 12px; }
+    .dp-chart-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; color: rgba(176,200,240,0.5); margin-bottom: 8px; font-weight: 500; letter-spacing: 0.04em;
+    }
+    .dp-alerts { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .dp-alert {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(21,101,192,0.06); border-radius: 8px; padding: 8px 12px;
+      font-size: 0.7rem; border-left: 2px solid transparent;
+    }
+    .dp-alert.alert-red { border-left-color: #f87171; }
+    .dp-alert.alert-orange { border-left-color: #fb923c; }
+    .dp-alert.alert-green { border-left-color: #4ade80; }
+    .dp-alert-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .dp-alert-dot.green { background: #4ade80; }
+    .dp-alert-dot.orange { background: #fb923c; }
+    .dp-alert-dot.red { background: #f87171; }
+    .dp-alert-text { color: rgba(176,200,240,0.8); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; }
+    .dp-alert-time { color: rgba(176,200,240,0.4); margin-left: auto; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; }
+
+    /* ── IOT NODE BADGES ── */
+    .iot-nodes { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .iot-node {
+      display: flex; align-items: center; gap: 5px;
+      padding: 3px 8px; border-radius: 4px;
+      background: rgba(0,153,222,0.12); border: 1px solid rgba(0,153,222,0.3);
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: #60aaff;
+    }
+    .iot-node-dot { width: 5px; height: 5px; border-radius: 50%; background: #60aaff; animation: pulse-dot 2s infinite; }
+
+    /* ── LOGOS ── */
+    .logos-section {
+      padding: 40px 6%;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      background: var(--bg-dark); position: relative; z-index: 1;
+    }
+    .logos-label {
+      text-align: center; font-size: 0.75rem; color: var(--text-3); font-weight: 500;
+      margin-bottom: 28px; letter-spacing: 0.08em; text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .logos-strip { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; }
+    .logo-pill {
+      padding: 7px 18px; border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text-3); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+      font-family: 'JetBrains Mono', monospace;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      background: #fff;
+    }
+    .logo-pill:hover { border-color: rgba(21,101,192,0.4); color: var(--primary); background: var(--primary-dim); }
+
+    /* ── SECTIONS COMMON ── */
+    section { padding: 100px 6%; position: relative; z-index: 1; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 14px; border-radius: 4px;
+      background: var(--primary-dim); border: 1px solid rgba(21,101,192,0.2);
+      font-size: 0.7rem; font-weight: 700; color: var(--primary);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 16px; font-family: 'JetBrains Mono', monospace;
+    }
+    .section-h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800; line-height: 1.2; margin-bottom: 16px; color: var(--navy); }
+    .section-sub { font-size: 1rem; color: var(--text-2); max-width: 560px; line-height: 1.75; }
+    .section-header { margin-bottom: 56px; }
+    .section-header.center { text-align: center; }
+    .section-header.center .section-sub { margin: 0 auto; }
+
+    /* ── METRICS BELT ── */
+    .metrics-belt {
+      background: var(--navy);
+      border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 0 6%; position: relative; z-index: 1;
+    }
+    .metrics-grid {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+    }
+    .metric-item {
+      padding: 40px 24px; text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.08); position: relative;
+    }
+    .metric-item:last-child { border-right: none; }
+    .metric-item::before {
+      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 40px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+    .metric-num {
+      font-size: 2.4rem; font-weight: 900; color: #fff;
+      font-variant-numeric: tabular-nums; font-family: 'Rajdhani', sans-serif;
+    }
+    .metric-num .unit { font-size: 1.4rem; color: var(--accent); }
+    .metric-desc { font-size: 0.82rem; color: rgba(176,200,240,0.7); margin-top: 6px; font-weight: 500; }
+
+    /* ── HOW IT WORKS ── */
+    .how-section { background: var(--bg-dark); }
+    .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
+    .how-grid::before {
+      content: '';
+      position: absolute; top: 36px; left: 16.66%; right: 16.66%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent);
+      opacity: 0.4; pointer-events: none;
+    }
+    .how-step { padding: 40px 36px; text-align: center; position: relative; }
+    .how-num {
+      width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 20px;
+      background: #fff; border: 2px solid var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; font-weight: 900; color: var(--primary);
+      position: relative; z-index: 1;
+      box-shadow: 0 4px 20px var(--primary-glow);
+      font-family: 'Rajdhani', sans-serif;
+    }
+    .how-step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: var(--navy); }
+    .how-step p { font-size: 0.875rem; color: var(--text-2); line-height: 1.7; }
+
+    /* ── FEATURES ── */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 30px;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .feature-card::after {
+      content: ''; position: absolute; bottom: 0; right: 0;
+      width: 30px; height: 30px;
+      border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+      border-radius: 0 0 var(--radius) 0;
+    }
+    .feature-card:hover { transform: translateY(-4px); border-color: rgba(21,101,192,0.3); box-shadow: 0 12px 40px rgba(21,101,192,0.1); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 20px;
+    }
+    .feature-icon.gold { background: var(--primary-dim); border: 1px solid rgba(21,101,192,0.2); }
+    .feature-icon.blue { background: var(--accent-dim); border: 1px solid rgba(0,153,222,0.2); }
+    .feature-icon.green { background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.18); }
+    .feature-icon.orange { background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.18); }
+    .feature-icon.red { background: rgba(220,38,38,0.07); border: 1px solid rgba(220,38,38,0.15); }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: var(--navy); }
+    .feature-card p { font-size: 0.875rem; color: var(--text-2); line-height: 1.7; }
+
+    /* ── TECH STACK STRIP ── */
+    .tech-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    .tech-badge {
+      padding: 4px 10px; border-radius: 4px;
+      background: var(--accent-dim); border: 1px solid var(--border-blue);
+      font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── CHARTS SECTION ── */
+    .charts-section { background: var(--bg-dark); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .charts-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start; }
+    .chart-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;
+      position: relative; overflow: hidden; box-shadow: var(--shadow);
+    }
+    .chart-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0.6;
+    }
+    .chart-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+    .chart-card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; color: var(--navy); }
+    .chart-card-sub { font-size: 0.75rem; color: var(--text-3); font-family: 'JetBrains Mono', monospace; }
+    .chart-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .chart-badge.up { background: rgba(5,150,105,0.1); color: var(--green); }
+    .chart-badge.warn { background: rgba(220,38,38,0.08); color: var(--red); }
+    .chart-right-col { display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── USE CASES ── */
+    .usecases-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .usecase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 32px;
+      display: grid; grid-template-columns: 60px 1fr; gap: 20px; align-items: start;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      box-shadow: 0 2px 12px rgba(21,101,192,0.04);
+    }
+    .usecase-card:hover { border-color: rgba(21,101,192,0.3); box-shadow: 0 8px 30px rgba(21,101,192,0.1); }
+    .usecase-icon {
+      width: 60px; height: 60px; border-radius: 14px;
+      background: var(--primary-dim); border: 1px solid rgba(21,101,192,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0;
+    }
+    .usecase-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: var(--navy); }
+    .usecase-card p { font-size: 0.875rem; color: var(--text-2); line-height: 1.7; }
+    .usecase-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .usecase-tag {
+      padding: 3px 10px; background: var(--primary-dim); border: 1px solid rgba(21,101,192,0.2);
+      border-radius: 4px; font-size: 0.7rem; font-weight: 600; color: var(--primary);
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
+    }
+
+    /* ── BENEFITS ── */
+    .benefits-section { background: var(--bg-dark); }
+    .benefits-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .benefits-list { display: flex; flex-direction: column; gap: 24px; margin-top: 40px; }
+    .benefit-item { display: flex; gap: 16px; align-items: flex-start; }
+    .benefit-check {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.2);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-size: 0.9rem; color: var(--green);
+    }
+    .benefit-item h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; color: var(--navy); }
+    .benefit-item p { font-size: 0.85rem; color: var(--text-2); line-height: 1.65; }
+    .roi-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 36px;
+      box-shadow: 0 8px 40px rgba(21,101,192,0.1);
+      position: relative; overflow: hidden;
+    }
+    .roi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+    .roi-card-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; color: var(--navy); }
+    .roi-card-sub { font-size: 0.8rem; color: var(--text-3); margin-bottom: 30px; font-family: 'JetBrains Mono', monospace; }
+    .roi-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .roi-row:last-child { border-bottom: none; }
+    .roi-label { font-size: 0.875rem; color: var(--text-2); }
+    .roi-val { font-size: 1rem; font-weight: 700; font-family: 'Rajdhani', sans-serif; }
+    .roi-bar-wrap { margin-top: 24px; }
+    .roi-bar-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-3); margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
+    .roi-bar { height: 6px; background: var(--primary-dim); border-radius: 3px; overflow: hidden; }
+    .roi-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); animation: bar-grow 2s ease-out forwards; }
+    @keyframes bar-grow { from { width: 0; } }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .testimonial-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px;
+      position: relative; box-shadow: 0 2px 16px rgba(21,101,192,0.06);
+    }
+    .testimonial-card::before {
+      content: '"'; position: absolute; top: 16px; right: 20px;
+      font-size: 4rem; color: var(--primary); opacity: 0.08; font-family: Georgia, serif; line-height: 1;
+    }
+    .stars { color: #f59e0b; font-size: 0.82rem; margin-bottom: 14px; letter-spacing: 3px; }
+    .testimonial-card blockquote { font-size: 0.875rem; color: var(--text-2); line-height: 1.75; margin-bottom: 20px; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .author-avatar {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; font-weight: 700; color: #fff; flex-shrink: 0;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    .author-name { font-size: 0.875rem; font-weight: 700; color: var(--navy); }
+    .author-title { font-size: 0.75rem; color: var(--text-3); }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      text-align: center; padding: 120px 6%;
+      background: linear-gradient(135deg, var(--navy) 0%, #1a3a8a 100%);
+      border-top: 1px solid var(--border);
+    }
+    .cta-section h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; margin-bottom: 20px; color: #fff; }
+    .cta-section p { font-size: 1rem; color: rgba(176,200,240,0.85); max-width: 520px; margin: 0 auto 40px; line-height: 1.75; }
+    .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .cta-section form { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+    .cta-input {
+      padding: 13px 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px; color: #fff; font-size: 0.9rem; font-family: inherit;
+      outline: none; width: 280px; transition: border-color 0.2s;
+    }
+    .cta-input::placeholder { color: rgba(176,200,240,0.5); }
+    .cta-input:focus { border-color: rgba(0,153,222,0.6); }
+    .cta-note { font-size: 0.75rem; color: rgba(176,200,240,0.5); margin-top: 14px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em; }
+    .whatsapp-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 32px; background: #25d366; color: #fff;
+      border-radius: 10px; font-weight: 700; font-size: 0.95rem; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .whatsapp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,211,102,0.4); }
+    .contact-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+      margin-top: 48px; text-align: left;
+    }
+    .contact-card {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius); padding: 28px;
+      position: relative; overflow: hidden;
+    }
+    .contact-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--accent), var(--primary));
+    }
+    .contact-card-icon { font-size: 1.8rem; margin-bottom: 14px; }
+    .contact-card h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+    .contact-card p { font-size: 0.82rem; color: rgba(176,200,240,0.75); margin-bottom: 14px; line-height: 1.65; }
+    .contact-card a {
+      font-size: 0.875rem; font-weight: 700; color: #60aaff; text-decoration: none;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .contact-card a:hover { color: var(--accent); }
+
+    /* ── FOOTER ── */
+    footer { background: var(--bg-dark); border-top: 1px solid var(--border); padding: 60px 6% 40px; position: relative; z-index: 1; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; }
+    .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+    .footer-brand p { font-size: 0.875rem; color: var(--text-2); margin-top: 14px; max-width: 280px; line-height: 1.75; }
+    .footer-col h4 {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 16px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col ul a { font-size: 0.875rem; color: var(--text-2); text-decoration: none; transition: color 0.2s; }
+    .footer-col ul a:hover { color: var(--primary); }
+    .footer-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 28px; border-top: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--text-3); font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── SCROLL ANIMATIONS ── */
+    .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .fade-in.visible { opacity: 1; transform: none; }
+
+    /* ── DIVIDER LINE ── */
+    .glow-line {
+      height: 1px; width: 100%;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent);
+      opacity: 0.2;
+    }
+
+    /* ── MOBILE NAV OVERLAY ── */
+    .mobile-nav-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(255,255,255,0.98); backdrop-filter: blur(20px);
+      flex-direction: column; padding: 24px 6%;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-nav-overlay.open { display: flex; }
+    .mobile-nav-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .mobile-nav-close {
+      width: 40px; height: 40px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--bg-dark);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-2); font-size: 1.2rem;
+    }
+    .mobile-nav-links { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .mobile-nav-links li a {
+      display: block; padding: 14px 0;
+      font-size: 1.1rem; font-weight: 600; color: var(--navy);
+      text-decoration: none; border-bottom: 1px solid var(--border);
+      transition: color 0.2s, padding-left 0.2s;
+    }
+    .mobile-nav-links li a:hover { color: var(--primary); padding-left: 8px; }
+    .mobile-nav-cta {
+      margin-top: 28px; display: block; text-align: center;
+      padding: 16px; background: var(--primary);
+      color: #fff; border-radius: 10px; font-weight: 700; font-size: 1rem;
+      text-decoration: none;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .charts-layout { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      .how-grid::before { display: none; }
+    }
+
+    @media (max-width: 768px) {
+      /* Nav */
+      .nav-links { display: none; }
+      .nav-cta { display: none; }
+      .nav-hamburger { display: flex; }
+      nav { padding: 14px 5%; }
+
+      /* Sections */
+      section { padding: 64px 5%; }
+      .metrics-belt { padding: 0 5%; }
+      .logos-section { padding: 32px 5%; }
+
+      /* Hero */
+      .hero { padding: 100px 5% 60px; }
+      .hero h1 { font-size: clamp(2rem, 8vw, 2.8rem); }
+      .hero p { font-size: 0.95rem; margin-bottom: 28px; }
+      .hero-actions { flex-direction: column; gap: 10px; }
+      .hero-actions .btn-primary,
+      .hero-actions .btn-secondary { width: 100%; justify-content: center; }
+      .hero-stats { gap: 20px; padding-top: 28px; margin-top: 28px; }
+
+      /* Grids */
+      .features-grid { grid-template-columns: 1fr; }
+      .usecases-grid { grid-template-columns: 1fr; }
+      .benefits-layout { grid-template-columns: 1fr; gap: 40px; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .how-grid { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .metric-item { border-right: none; border-bottom: 1px solid var(--border); }
+
+      /* CTA section */
+      .cta-section { padding: 80px 5%; }
+      .cta-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+      .cta-actions .whatsapp-btn,
+      .cta-actions .btn-primary { width: 100%; justify-content: center; }
+      .cta-section form { flex-direction: column; align-items: stretch; gap: 10px; }
+      .cta-input { width: 100%; }
+      .cta-section form .btn-primary { width: 100%; justify-content: center; }
+
+      /* ROI card */
+      .roi-card { padding: 24px; }
+      .roi-row { flex-wrap: wrap; gap: 4px; }
+
+      /* Footer */
+      footer { padding: 48px 5% 32px; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 36px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      .footer-bottom > div { flex-wrap: wrap; justify-content: center; gap: 16px; }
+      .footer-brand p { max-width: 100%; }
+
+      /* Logos strip */
+      .logos-strip { gap: 10px; }
+
+      /* Section header */
+      .section-h2 { font-size: clamp(1.5rem, 5vw, 2rem); }
+    }
+
+    @media (max-width: 480px) {
+      /* Nav */
+      nav { padding: 12px 4%; }
+
+      /* Sections */
+      section { padding: 56px 4%; }
+      .hero { padding: 88px 4% 52px; }
+
+      /* Hero */
+      .hero-stats { flex-direction: column; gap: 14px; }
+      .hero-stat-val { font-size: 1.5rem; }
+
+      /* Metrics */
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+      .metric-num { font-size: 1.9rem; }
+
+      /* Dashboard KPIs */
+      .dp-kpis { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .dp-kpi { padding: 8px; }
+      .dp-kpi-val { font-size: 0.9rem; }
+      .dp-kpi-label { font-size: 0.55rem; }
+      .dp-kpi-sub { display: none; }
+      .dp-alert-text { font-size: 0.6rem; }
+      .iot-nodes { gap: 5px; }
+      .iot-node { font-size: 0.55rem; padding: 2px 6px; }
+
+      /* Use cases */
+      .usecase-card { grid-template-columns: 48px 1fr; gap: 14px; padding: 20px; }
+      .usecase-icon { width: 48px; height: 48px; font-size: 1.4rem; border-radius: 10px; }
+
+      /* Feature cards */
+      .feature-card { padding: 22px; }
+
+      /* How steps */
+      .how-step { padding: 28px 20px; }
+
+      /* Testimonials */
+      .testimonial-card { padding: 20px; }
+
+      /* Footer */
+      .footer-top { grid-template-columns: 1fr; gap: 28px; }
+      .footer-bottom > div { gap: 12px; }
+
+      /* CTA */
+      .cta-section { padding: 64px 4%; }
+
+      /* Contact cards */
+      .contact-card { padding: 20px; }
+
+      /* Benefit items */
+      .benefit-item { gap: 12px; }
+      .benefit-check { width: 32px; height: 32px; flex-shrink: 0; }
+
+      /* Tech badges */
+      .tech-strip { gap: 6px; }
+      .tech-badge { font-size: 0.6rem; padding: 3px 7px; }
+
+      /* Chart cards */
+      .chart-card { padding: 16px; }
+
+      /* ROI */
+      .roi-card { padding: 20px; }
+      .roi-val { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="circuit-bg"></div>
+
+<!-- MOBILE NAV OVERLAY -->
+<div class="mobile-nav-overlay" id="mobileNav">
+  <div class="mobile-nav-header">
+    <a href="#" class="nav-logo" onclick="closeMobileNav()">
+      <img src="technurah_icon.png" alt="Technurah Logo" />
+      <div class="nav-logo-text">
+        <span class="logo-technurah">TECHNURA<span class="logo-h">H</span></span>
+        <span class="nav-slogan">Light of Technology</span>
+      </div>
+    </a>
+    <div class="mobile-nav-close" onclick="closeMobileNav()">✕</div>
+  </div>
+  <ul class="mobile-nav-links">
+    <li><a href="#problem" onclick="closeMobileNav()">The Problem</a></li>
+    <li><a href="#features" onclick="closeMobileNav()">Platform</a></li>
+    <li><a href="#charts" onclick="closeMobileNav()">Analytics</a></li>
+    <li><a href="#usecases" onclick="closeMobileNav()">Industries</a></li>
+    <li><a href="#benefits" onclick="closeMobileNav()">ROI</a></li>
+  </ul>
+  <a href="#contact" class="mobile-nav-cta" onclick="closeMobileNav()">Request Demo →</a>
+</div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <img src="technurah_icon.png" alt="Technurah Logo" />
+    <div class="nav-logo-text">
+      <span class="logo-technurah">TECHNURA<span class="logo-h">H</span></span>
+      <span class="nav-slogan">Light of Technology</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#problem">The Problem</a></li>
+    <li><a href="#features">Platform</a></li>
+    <li><a href="#charts">Analytics</a></li>
+    <li><a href="#usecases">Industries</a></li>
+    <li><a href="#benefits">ROI</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Request Demo</a>
+  <div class="nav-hamburger" id="hamburger" onclick="openMobileNav()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow-2"></div>
+  <div class="pcb-trace pcb-trace-1"></div>
+  <div class="pcb-trace pcb-trace-2"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        IoT · Energy · Production · Real-Time
+      </div>
+      <h1>
+        Illuminate Every<br/>
+        <span class="accent-gold">Watt.</span>
+        Every <span class="accent-blue">Machine.</span><br/>
+        Every Minute.
+      </h1>
+      <p>
+        Energy rising. Output falling. The gap is worker negligence — machines idle, lines dark, power burning every shift. Technurah makes that gap visible, measurable, and fixable in real time with IoT intelligence.
+      </p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn-primary">
+          Book a Free Demo
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#charts" class="btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 15.5V8.5a.5.5 0 0 1 .8-.4l5 3.5a.5.5 0 0 1 0 .8l-5 3.5a.5.5 0 0 1-.8-.4z"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          See Live Analytics
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-val"><span id="c1">0</span>%</div>
+          <div class="hero-stat-label">Energy waste eliminated</div>
+        </div>
+        <div>
+          <div class="hero-stat-val"><span id="c2">0</span>s</div>
+          <div class="hero-stat-label">Alert response time</div>
+        </div>
+        <div>
+          <div class="hero-stat-val"><span id="c3">0</span>+</div>
+          <div class="hero-stat-label">Production lines monitored</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="dashboard-preview">
+        <div class="dp-corner-bl"></div>
+        <div class="dp-topbar">
+          <span class="dp-title">TECHNURAH · FLOOR OVERVIEW · Sewing Section A</span>
+          <span class="dp-live"><span class="dp-live-dot"></span>LIVE</span>
+        </div>
+        <div class="iot-nodes">
+          <div class="iot-node"><span class="iot-node-dot"></span>NODE-07</div>
+          <div class="iot-node"><span class="iot-node-dot"></span>NODE-12</div>
+          <div class="iot-node"><span class="iot-node-dot"></span>NODE-18</div>
+          <div class="iot-node" style="color:#a78bfa;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.25)"><span class="iot-node-dot" style="background:#a78bfa"></span>MQTT</div>
+        </div>
+        <div class="dp-kpis">
+          <div class="dp-kpi">
+            <div class="dp-kpi-label">ENERGY NOW</div>
+            <div class="dp-kpi-val gold" id="dp-load">284 kW</div>
+            <div class="dp-kpi-sub bad" id="dp-load-sub">↑ 18% above target</div>
+          </div>
+          <div class="dp-kpi">
+            <div class="dp-kpi-label">UNITS / HR</div>
+            <div class="dp-kpi-val red" id="dp-cost">142</div>
+            <div class="dp-kpi-sub bad">↓ 31% below target</div>
+          </div>
+          <div class="dp-kpi">
+            <div class="dp-kpi-label">IDLE LINES</div>
+            <div class="dp-kpi-val red" id="dp-eff">4 / 18</div>
+            <div class="dp-kpi-sub bad">Still drawing power</div>
+          </div>
+        </div>
+        <div class="dp-chart-wrap">
+          <div class="dp-chart-label">ENERGY (kW) vs GARMENT OUTPUT — Last 30 min</div>
+          <canvas id="heroChart" height="90"></canvas>
+        </div>
+        <div class="dp-alerts">
+          <div class="dp-alert alert-red">
+            <span class="dp-alert-dot red"></span>
+            <span class="dp-alert-text">Line 7 — 24 min running, 0 units logged</span>
+            <span class="dp-alert-time">now</span>
+          </div>
+          <div class="dp-alert alert-orange">
+            <span class="dp-alert-dot orange"></span>
+            <span class="dp-alert-text">Line 12 — energy 40% above shift average</span>
+            <span class="dp-alert-time">3m ago</span>
+          </div>
+          <div class="dp-alert alert-green">
+            <span class="dp-alert-dot green"></span>
+            <span class="dp-alert-text">Line 3 — on target, 98 pcs/hr efficiency</span>
+            <span class="dp-alert-time">live</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-line"></div>
+
+<!-- LOGOS -->
+<div class="logos-section">
+  <div class="logos-label">Deployed in garment factories, textile mills &amp; manufacturing plants</div>
+  <div class="logos-strip">
+    <div class="logo-pill">KNIT WEAR</div>
+    <div class="logo-pill">WOVEN FABRIC</div>
+    <div class="logo-pill">DYEING &amp; FINISHING</div>
+    <div class="logo-pill">SPINNING MILLS</div>
+    <div class="logo-pill">SWEATER MFG</div>
+    <div class="logo-pill">ACCESSORIES</div>
+  </div>
+</div>
+
+<!-- METRICS BELT -->
+<div class="metrics-belt">
+  <div class="metrics-grid">
+    <div class="metric-item fade-in">
+      <div class="metric-num"><span class="counter" data-target="38">0</span><span class="unit">%</span></div>
+      <div class="metric-desc">Reduction in idle energy waste</div>
+    </div>
+    <div class="metric-item fade-in">
+      <div class="metric-num"><span class="counter" data-target="500">0</span><span class="unit">+</span></div>
+      <div class="metric-desc">Production lines monitored live</div>
+    </div>
+    <div class="metric-item fade-in">
+      <div class="metric-num"><span class="counter" data-target="60">0</span><span class="unit">s</span></div>
+      <div class="metric-desc">Time to detect negligence alert</div>
+    </div>
+    <div class="metric-item fade-in">
+      <div class="metric-num"><span class="counter" data-target="99">0</span><span class="unit">.<small>9%</small></span></div>
+      <div class="metric-desc">Platform uptime SLA</div>
+    </div>
+  </div>
+</div>
+
+<!-- THE PROBLEM -->
+<section id="problem">
+  <div class="section-inner">
+    <div class="section-header fade-in">
+      <div class="section-tag">The Industry Problem</div>
+      <h2 class="section-h2">High energy bills. Low production output.<br/>The gap is <span style="color:var(--red)">worker negligence</span> — and it's invisible.</h2>
+      <p class="section-sub">In most garment and textile factories, managers have no way to see what's happening at the machine level — until the monthly bill arrives. By then, the damage is done.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-in" style="border-color:rgba(239,68,68,0.22)">
+        <div class="feature-icon red">🔌</div>
+        <h3>Machines Running, Nobody Working</h3>
+        <p>Sewing lines left powered on during breaks, lunch, and handover. Each idle line consumes full standby power — multiplied by dozens of lines across a shift.</p>
+        <div class="tech-strip">
+          <span class="tech-badge">MQTT Sensor</span>
+          <span class="tech-badge">Real-Time</span>
+        </div>
+      </div>
+      <div class="feature-card fade-in" style="border-color:rgba(239,68,68,0.22)">
+        <div class="feature-icon red">📉</div>
+        <h3>Production Below Target, No Alert</h3>
+        <p>Output drops by 30–40% during certain shifts or under specific supervisors — but without per-minute data, management only sees the end-of-day report when it's too late.</p>
+        <div class="tech-strip">
+          <span class="tech-badge">IoT Bridge</span>
+          <span class="tech-badge">WebSocket</span>
+        </div>
+      </div>
+      <div class="feature-card fade-in" style="border-color:rgba(239,68,68,0.22)">
+        <div class="feature-icon red">💡</div>
+        <h3>Utilities Left On After Hours</h3>
+        <p>Lights, HVAC, compressors, and auxiliary equipment running overnight or on weekends. A single overlooked switch can cost thousands in a month.</p>
+        <div class="tech-strip">
+          <span class="tech-badge">Edge Alert</span>
+          <span class="tech-badge">AI Detection</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="section-inner">
+    <div class="section-header center fade-in">
+      <div class="section-tag">How Technurah Works</div>
+      <h2 class="section-h2">From factory floor to manager's screen<br/>in under 60 seconds</h2>
+    </div>
+    <div class="how-grid">
+      <div class="how-step fade-in">
+        <div class="how-num">01</div>
+        <h3>Install IoT Smart Sensors</h3>
+        <p>Clip-on IoT energy meters attach to each machine, line, and circuit panel in under 2 hours — no wiring, no shutdown required. ESP32 nodes go live instantly over MQTT.</p>
+      </div>
+      <div class="how-step fade-in">
+        <div class="how-num">02</div>
+        <h3>Track Energy + Production Together</h3>
+        <p>Technurah pulls energy data (kW per minute) alongside production counts for every line, every shift, every worker — giving you the energy-to-output ratio that matters.</p>
+      </div>
+      <div class="how-step fade-in">
+        <div class="how-num">03</div>
+        <h3>Get Instant Accountability Alerts</h3>
+        <p>The moment a line consumes power without producing output, managers receive an alert with the exact line, time, and energy wasted — enabling immediate corrective action.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-header fade-in">
+      <div class="section-tag">Platform Features</div>
+      <h2 class="section-h2">Built for factory managers<br/>who need answers, not spreadsheets</h2>
+      <p class="section-sub">Every feature is designed around one goal: making worker and machine accountability automatic, real-time, and undeniable.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon gold">⚡</div>
+        <h3>Per-Minute Energy Tracking</h3>
+        <p>Monitor energy consumption for every individual machine and production line at 60-second resolution over MQTT. Spot idle draw, abnormal spikes, and wasteful patterns the moment they occur.</p>
+        <div class="tech-strip">
+          <span class="tech-badge">ESP32</span>
+          <span class="tech-badge">MQTT</span>
+          <span class="tech-badge">Redis</span>
+        </div>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon green">👕</div>
+        <h3>Production vs. Energy Ratio</h3>
+        <p>The critical metric nobody currently measures: energy consumed per garment produced, per line, per shift, per supervisor. Instantly identify which lines are costing you the most per unit.</p>
+        <div class="tech-strip">
+          <span class="tech-badge">WebSocket</span>
+          <span class="tech-badge">ApexCharts</span>
+        </div>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon red">🚨</div>
+        <h3>Worker Negligence Alerts</h3>
+        <p>Automatic alerts the instant a machine is running but producing nothing. Get notified via dashboard, email, or WhatsApp — with line number, duration, and estimated energy cost wasted.</p>
+        <div class="tech-strip">
+          <span class="tech-badge">Celery</span>
+          <span class="tech-badge">SMTP</span>
+          <span class="tech-badge">Edge Trigger</span>
+        </div>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon orange">📋</div>
+        <h3>Shift-Wise Accountability Reports</h3>
+        <p>Auto-generated reports for every shift: which supervisor was on duty, which lines underperformed, how much energy was wasted versus production achieved. Perfect for daily management reviews.</p>
+        <div class="tech-strip">
+          <span class="tech-badge">CSV Export</span>
+          <span class="tech-badge">Analytics</span>
+        </div>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon blue">🧠</div>
+        <h3>AI Pattern Detection</h3>
+        <p>Machine learning models learn your factory's normal patterns and automatically flag deviations — catching slow negligence trends before they become chronic, costly problems.</p>
+        <div class="tech-strip">
+          <span class="tech-badge">ML Models</span>
+          <span class="tech-badge">Anomaly AI</span>
+        </div>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon gold">📱</div>
+        <h3>Mobile Dashboard for Managers</h3>
+        <p>Full factory visibility from your phone — live energy, live output, active alerts, and shift summaries. Walk the floor with data, not assumptions. Available 24/7 from anywhere.</p>
+        <div class="tech-strip">
+          <span class="tech-badge">Responsive UI</span>
+          <span class="tech-badge">PWA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHARTS / ANALYTICS -->
+<section id="charts" class="charts-section">
+  <div class="section-inner">
+    <div class="section-header fade-in">
+      <div class="section-tag">Live Analytics</div>
+      <h2 class="section-h2">See energy waste and production loss<br/>side-by-side, in real time</h2>
+      <p class="section-sub" style="max-width:none">When energy goes up and production goes down — Technurah shows you exactly which line, which shift, and by how much.</p>
+    </div>
+    <div class="charts-layout">
+      <div class="chart-card fade-in">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">Energy Consumed vs. Garments Produced — Shift Comparison</div>
+            <div class="chart-card-sub">This week · kWh per shift vs. units output per shift</div>
+          </div>
+          <span class="chart-badge up">Night shift +22% efficient</span>
+        </div>
+        <canvas id="mainChart" height="220"></canvas>
+      </div>
+      <div class="chart-right-col">
+        <div class="chart-card fade-in">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Energy by Floor Section</div>
+              <div class="chart-card-sub">Today's consumption breakdown</div>
+            </div>
+            <span class="chart-badge warn">Sewing A overconsuming</span>
+          </div>
+          <canvas id="donutChart" height="160"></canvas>
+        </div>
+        <div class="chart-card fade-in">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Idle Energy Wasted per Shift</div>
+              <div class="chart-card-sub">Machines running with zero output (kWh)</div>
+            </div>
+            <span class="chart-badge warn">Avg 14.2 kWh/shift wasted</span>
+          </div>
+          <canvas id="barChart" height="130"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section id="usecases">
+  <div class="section-inner">
+    <div class="section-header center fade-in">
+      <div class="section-tag">Industries We Serve</div>
+      <h2 class="section-h2">Wherever machines run<br/>and workers operate shifts</h2>
+      <p class="section-sub">Technurah is built for the reality of floor-level manufacturing — fast-moving, shift-based, and too often unmonitored.</p>
+    </div>
+    <div class="usecases-grid">
+      <div class="usecase-card fade-in">
+        <div class="usecase-icon">👗</div>
+        <div>
+          <h3>Garments &amp; Apparel Factories</h3>
+          <p>Track sewing lines, cutting sections, and finishing floors. Know the energy cost per dozen garments, flag idle lines during breaks, and hold each shift supervisor accountable with hard data.</p>
+          <div class="usecase-tags">
+            <span class="usecase-tag">Line-Level Monitoring</span>
+            <span class="usecase-tag">Supervisor Reports</span>
+            <span class="usecase-tag">Idle Detection</span>
+          </div>
+        </div>
+      </div>
+      <div class="usecase-card fade-in">
+        <div class="usecase-icon">🧵</div>
+        <div>
+          <h3>Textile &amp; Spinning Mills</h3>
+          <p>Monitor spinning machines, looms, and dyeing vats continuously. Detect off-spec energy spikes that indicate mechanical issues or operator errors before they escalate into costly breakdowns.</p>
+          <div class="usecase-tags">
+            <span class="usecase-tag">Machine Health</span>
+            <span class="usecase-tag">Process Efficiency</span>
+            <span class="usecase-tag">Waste Alerts</span>
+          </div>
+        </div>
+      </div>
+      <div class="usecase-card fade-in">
+        <div class="usecase-icon">🏭</div>
+        <div>
+          <h3>General Manufacturing Plants</h3>
+          <p>Assembly lines, packaging stations, and production cells — track energy versus throughput at every station. Identify bottlenecks and underperforming teams before end-of-shift reports.</p>
+          <div class="usecase-tags">
+            <span class="usecase-tag">Throughput Tracking</span>
+            <span class="usecase-tag">Shift Benchmarking</span>
+            <span class="usecase-tag">OEE Integration</span>
+          </div>
+        </div>
+      </div>
+      <div class="usecase-card fade-in">
+        <div class="usecase-icon">🎨</div>
+        <div>
+          <h3>Dyeing, Washing &amp; Finishing Units</h3>
+          <p>High-energy processes with precise timing requirements. Technurah tracks steam, water heating, and chemical dosing energy per batch — linking cost directly to output quality and volume.</p>
+          <div class="usecase-tags">
+            <span class="usecase-tag">Batch Tracking</span>
+            <span class="usecase-tag">Steam Monitoring</span>
+            <span class="usecase-tag">Cost per Batch</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section id="benefits" class="benefits-section">
+  <div class="section-inner">
+    <div class="benefits-layout">
+      <div>
+        <div class="section-tag">Why Technurah</div>
+        <h2 class="section-h2 fade-in">Accountability you can<br/>show the board — and the floor</h2>
+        <div class="benefits-list">
+          <div class="benefit-item fade-in">
+            <div class="benefit-check">✓</div>
+            <div>
+              <h4>Catch negligence in under 60 seconds</h4>
+              <p>The moment a worker leaves a machine running unattended, Technurah flags it. Managers get an alert with line number, duration, and estimated taka wasted — before the shift ends.</p>
+            </div>
+          </div>
+          <div class="benefit-item fade-in">
+            <div class="benefit-check">✓</div>
+            <div>
+              <h4>Compare shift vs. shift, supervisor vs. supervisor</h4>
+              <p>For the first time, management has objective, data-backed performance comparison across all shifts — removing guesswork, favouritism, and end-of-day surprises from floor management.</p>
+            </div>
+          </div>
+          <div class="benefit-item fade-in">
+            <div class="benefit-check">✓</div>
+            <div>
+              <h4>Reduce energy bills without cutting production</h4>
+              <p>Most factories waste 25–40% of their energy on idle machines, unnecessary standby, and after-hours consumption. Technurah identifies every source automatically and tracks the savings.</p>
+            </div>
+          </div>
+          <div class="benefit-item fade-in">
+            <div class="benefit-check">✓</div>
+            <div>
+              <h4>Quick installation, zero production disruption</h4>
+              <p>Non-invasive IoT clamp meters install on live circuits in hours — no production stoppage, no electrician downtime. You're live and seeing data the same day.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fade-in">
+        <div class="roi-card">
+          <div class="roi-card-title">Estimated Monthly Savings</div>
+          <div class="roi-card-sub">// Based on 500-line garments factory (3 shifts/day)</div>
+          <div class="roi-row">
+            <span class="roi-label">Idle machine energy eliminated</span>
+            <span class="roi-val" style="color:var(--green)">৳ 1,80,000</span>
+          </div>
+          <div class="roi-row">
+            <span class="roi-label">After-hours wastage stopped</span>
+            <span class="roi-val" style="color:var(--green)">৳ 65,000</span>
+          </div>
+          <div class="roi-row">
+            <span class="roi-label">Production improvement (8%)</span>
+            <span class="roi-val" style="color:var(--green)">৳ 2,40,000</span>
+          </div>
+          <div class="roi-row">
+            <span class="roi-label">Supervisor accountability gains</span>
+            <span class="roi-val" style="color:var(--green)">৳ 90,000</span>
+          </div>
+          <div class="roi-row" style="padding-top:18px;margin-top:6px;border-top:1px solid var(--border)">
+            <span class="roi-label" style="font-weight:700;color:var(--text-1)">Total Monthly Impact</span>
+            <span class="roi-val" style="color:var(--primary);font-size:1.4rem">৳ 5,75,000</span>
+          </div>
+          <div class="roi-bar-wrap">
+            <div class="roi-bar-label">
+              <span>Idle energy recovered (YTD)</span>
+              <span style="color:var(--primary)">82%</span>
+            </div>
+            <div class="roi-bar">
+              <div class="roi-bar-fill" style="width:82%"></div>
+            </div>
+          </div>
+          <div class="roi-bar-wrap" style="margin-top:14px">
+            <div class="roi-bar-label">
+              <span>Production efficiency gain</span>
+              <span style="color:var(--green)">+26%</span>
+            </div>
+            <div class="roi-bar">
+              <div class="roi-bar-fill" style="width:72%;background:linear-gradient(90deg,var(--green),#0d9488);animation-delay:0.3s"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="section-inner">
+    <div class="section-header center fade-in">
+      <div class="section-tag">Customer Stories</div>
+      <h2 class="section-h2">What factory managers say<br/>after their first month with Technurah</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card fade-in">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Within the first week, Technurah showed us that 6 sewing lines were running for 45 minutes after each shift with no workers present. We fixed it immediately and cut our energy bill by 22%."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:linear-gradient(135deg,var(--primary),var(--accent))">RH</div>
+          <div>
+            <div class="author-name">Rafiqul H.</div>
+            <div class="author-title">General Manager · Knitwear Factory, Gazipur</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card fade-in">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Before Technurah, I had no idea which shift was performing poorly. Now I have a daily IoT report showing energy per dozen by shift — and my supervisors know exactly what they're accountable for."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:linear-gradient(135deg,var(--navy),var(--primary))">NI</div>
+          <div>
+            <div class="author-name">Nasrin I.</div>
+            <div class="author-title">Factory Director · Woven Garments, Narayanganj</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card fade-in">
+        <div class="stars">★★★★★</div>
+        <blockquote>"We have 14 production lines. Technurah told us that Line 9 was consuming 34% more energy than similar lines. Turned out the machine needed maintenance. Fixed in a day, saved us months of waste."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:linear-gradient(135deg,#10b981,#0d9488)">KA</div>
+          <div>
+            <div class="author-name">Karim A.</div>
+            <div class="author-title">Production Manager · Sweater Manufacturing, Dhaka</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA / CONTACT -->
+<section id="contact" class="cta-section">
+  <div class="section-tag" style="margin:0 auto 20px;width:fit-content">Get Started Today</div>
+  <h2>Stop guessing.<br/>Start <span style="color:var(--accent)">knowing</span>.</h2>
+  <p>Book a free 30-minute demo. We'll show you — using your factory's type and size — exactly how much energy and production you're losing right now, and how Technurah stops it.</p>
+  <div class="cta-actions">
+    <a href="https://wa.me/8801740999768" target="_blank" class="whatsapp-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.55 4.103 1.513 5.831L.055 23.267a.5.5 0 0 0 .611.636l5.638-1.479A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.526-5.184-1.439l-.372-.22-3.348.878.893-3.257-.242-.38A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      WhatsApp Us
+    </a>
+    <a href="mailto:technurah@gmail.com" class="btn-primary">
+      Book a Demo
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+
+  <div class="contact-grid">
+    <div class="contact-card">
+      <div class="contact-card-icon">💬</div>
+      <h4>WhatsApp (Fastest)</h4>
+      <p>Message us directly and get a response within minutes. Share your factory details and we'll tailor the demo to your needs.</p>
+      <a href="https://wa.me/8801740999768" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.55 4.103 1.513 5.831L.055 23.267a.5.5 0 0 0 .611.636l5.638-1.479A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.526-5.184-1.439l-.372-.22-3.348.878.893-3.257-.242-.38A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        +880 1740-999768
+      </a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-card-icon">📧</div>
+      <h4>Email Us</h4>
+      <p>Send us your factory details — type, number of lines, shifts per day — and we'll prepare a customised savings estimate for your facility.</p>
+      <a href="mailto:technurah@gmail.com">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        technurah@gmail.com
+      </a>
+    </div>
+    <div class="contact-card">
+      <div class="contact-card-icon">📅</div>
+      <h4>Book a Live Demo</h4>
+      <p>Schedule a 30-minute screen-share session. We'll show Technurah running on a real factory — live IoT data, live alerts, and the exact reports managers use daily.</p>
+      <a href="https://wa.me/8801740999768?text=I%20want%20to%20book%20a%20Technurah%20demo" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Schedule via WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <div class="cta-note">// No commitment · Demo within 24 hours · We come to your factory if needed</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo" style="margin-bottom:0">
+          <img src="technurah_icon.png" alt="Technurah" style="width:38px;height:38px;object-fit:contain;" />
+          <div class="nav-logo-text">
+            <span class="logo-technurah">TECHNURA<span class="logo-h">H</span></span>
+            <span class="nav-slogan">Light of Technology</span>
+          </div>
+        </a>
+        <p style="margin-top:16px">Real-time IoT energy and production monitoring for garments, textile, and manufacturing industries. Making worker accountability visible, measurable, and actionable — one factory at a time.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <ul>
+          <li><a href="#">Per-Minute Monitoring</a></li>
+          <li><a href="#">Production Tracking</a></li>
+          <li><a href="#">Negligence Alerts</a></li>
+          <li><a href="#">Shift Reports</a></li>
+          <li><a href="#">Mobile Dashboard</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Industries</h4>
+        <ul>
+          <li><a href="#">Garments &amp; Apparel</a></li>
+          <li><a href="#">Textile Mills</a></li>
+          <li><a href="#">Dyeing &amp; Finishing</a></li>
+          <li><a href="#">Spinning Mills</a></li>
+          <li><a href="#">General Manufacturing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="https://wa.me/8801740999768" target="_blank">WhatsApp: +880 1740-999768</a></li>
+          <li><a href="mailto:technurah@gmail.com">technurah@gmail.com</a></li>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="glow-line" style="margin-bottom:28px"></div>
+    <div class="footer-bottom">
+      <span>© <span id="copy-year"></span> Technurah Technologies. All rights reserved. — Light of Technology.</span>
+      <div style="display:flex;gap:24px">
+        <a href="https://wa.me/8801740999768" target="_blank" style="color:#25d366;text-decoration:none;font-weight:600;display:flex;align-items:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.116.55 4.103 1.513 5.831L.055 23.267a.5.5 0 0 0 .611.636l5.638-1.479A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.67-.526-5.184-1.439l-.372-.22-3.348.878.893-3.257-.242-.38A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          WhatsApp Us
+        </a>
+        <a href="#" style="color:var(--text-3);text-decoration:none" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-3)'">Privacy</a>
+        <a href="#" style="color:var(--text-3);text-decoration:none" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-3)'">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Dynamic copyright year
+document.getElementById('copy-year').textContent = new Date().getFullYear();
+
+// Mobile nav
+function openMobileNav() {
+  document.getElementById('mobileNav').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileNav() {
+  document.getElementById('mobileNav').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// NAV scroll effect
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// Counter animation
+function animateCounter(el, target, duration = 1800) {
+  const start = performance.now();
+  const update = (now) => {
+    const elapsed = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - elapsed, 3);
+    el.textContent = Math.round(eased * target);
+    if (elapsed < 1) requestAnimationFrame(update);
+    else el.textContent = target;
+  };
+  requestAnimationFrame(update);
+}
+
+setTimeout(() => {
+  animateCounter(document.getElementById('c1'), 38, 1500);
+  animateCounter(document.getElementById('c2'), 60, 1500);
+  animateCounter(document.getElementById('c3'), 500, 2000);
+}, 400);
+
+// Intersection Observer
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      if (entry.target.querySelector('.counter')) {
+        entry.target.querySelectorAll('.counter').forEach(el => {
+          animateCounter(el, parseInt(el.dataset.target));
+        });
+      }
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+
+// Animated hero dashboard KPIs
+const energyVals = [272,284,291,268,310,295,280,284,263,284];
+const unitVals   = [158,142,131,167,112,128,149,142,171,142];
+const idleVals   = ['3 / 18','4 / 18','5 / 18','2 / 18','7 / 18','5 / 18','3 / 18','4 / 18','2 / 18','4 / 18'];
+let ki = 0;
+setInterval(() => {
+  ki = (ki + 1) % energyVals.length;
+  const ld = document.getElementById('dp-load');
+  const ct = document.getElementById('dp-cost');
+  const ef = document.getElementById('dp-eff');
+  const ls = document.getElementById('dp-load-sub');
+  if (ld) ld.textContent = energyVals[ki] + ' kW';
+  if (ct) ct.textContent = unitVals[ki];
+  if (ef) ef.textContent = idleVals[ki];
+  const pct = Math.round((energyVals[ki] - 240) / 240 * 100);
+  if (ls) ls.textContent = (pct > 0 ? '↑ ' : '↓ ') + Math.abs(pct) + '% ' + (pct > 0 ? 'above' : 'below') + ' target';
+}, 2500);
+
+// HERO mini chart
+(function() {
+  const ctx = document.getElementById('heroChart');
+  if (!ctx) return;
+  const labels = Array.from({length: 30}, (_, i) => i + 1);
+  const energyData = [220,225,230,240,248,260,255,270,265,280,275,290,285,300,295,310,305,295,284,290,300,310,295,284,280,290,300,310,295,284];
+  const outputData = [210,205,198,195,188,180,183,170,175,160,165,148,153,138,143,128,133,145,142,138,128,118,135,142,148,138,128,118,135,142];
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          data: energyData,
+          borderColor: '#1565c0',
+          borderWidth: 1.5,
+          backgroundColor: 'rgba(21,101,192,0.07)',
+          tension: 0.4, fill: true, pointRadius: 0,
+        },
+        {
+          data: outputData,
+          borderColor: '#059669',
+          borderWidth: 1.5,
+          backgroundColor: 'rgba(5,150,105,0.04)',
+          tension: 0.4, fill: true, pointRadius: 0,
+        }
+      ]
+    },
+    options: {
+      animation: { duration: 1200 },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: { x: { display: false }, y: { display: false } },
+      responsive: true, maintainAspectRatio: true,
+    }
+  });
+})();
+
+// MAIN chart — energy vs garments
+(function() {
+  const ctx = document.getElementById('mainChart');
+  if (!ctx) return;
+  const shifts = ['Mon A','Mon B','Mon C','Tue A','Tue B','Tue C','Wed A','Wed B','Wed C','Thu A','Thu B','Thu C','Fri A','Fri B'];
+  const energy = [420,510,390,445,530,385,410,495,370,460,545,400,430,505];
+  const output = [3200,2600,3400,3050,2480,3520,3180,2700,3600,3000,2390,3450,3100,2650];
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: shifts,
+      datasets: [
+        {
+          label: 'Energy (kWh)',
+          data: energy,
+          backgroundColor: (ctx) => {
+            const v = ctx.parsed.y;
+            return v > 480 ? 'rgba(220,38,38,0.7)' : 'rgba(21,101,192,0.6)';
+          },
+          borderRadius: 5,
+          borderSkipped: false,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Garments (pcs)',
+          data: output,
+          type: 'line',
+          borderColor: '#059669',
+          borderWidth: 2.5,
+          backgroundColor: 'rgba(5,150,105,0.05)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: (ctx) => ctx.parsed.y < 2700 ? '#dc2626' : '#059669',
+          yAxisID: 'y2',
+        }
+      ]
+    },
+    options: {
+      animation: { duration: 1400 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: '#2d4a7a', font: { size: 11 }, boxWidth: 12, padding: 16 } },
+        tooltip: {
+          backgroundColor: '#0d1f5c',
+          borderColor: 'rgba(21,101,192,0.3)',
+          borderWidth: 1, titleColor: '#fff', bodyColor: 'rgba(176,200,240,0.9)',
+          callbacks: {
+            afterBody: (items) => {
+              const e = items[0]?.parsed.y; const o = items[1]?.parsed.y;
+              if (e && o) return [`Energy/pcs: ${(e/o*1000).toFixed(1)} Wh/garment`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#7090b8', font: { size: 10 } }, grid: { color: 'rgba(21,101,192,0.06)' } },
+        y: { ticks: { color: '#7090b8', font: { size: 11 } }, grid: { color: 'rgba(21,101,192,0.06)' }, title: { display: true, text: 'kWh', color: '#7090b8', font: { size: 10 } } },
+        y2: { position: 'right', ticks: { color: '#7090b8', font: { size: 11 } }, grid: { display: false }, title: { display: true, text: 'Garments', color: '#7090b8', font: { size: 10 } } }
+      }
+    }
+  });
+})();
+
+// DONUT — energy by section
+(function() {
+  const ctx = document.getElementById('donutChart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Sewing Section A','Sewing Section B','Cutting Floor','Finishing','Utilities/Lighting'],
+      datasets: [{
+        data: [38, 24, 16, 12, 10],
+        backgroundColor: ['#dc2626','#1565c0','#059669','#0099de','#7c3aed'],
+        borderWidth: 0,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      cutout: '68%',
+      animation: { duration: 1400 },
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#2d4a7a', font: { size: 10 }, boxWidth: 10, padding: 10 } },
+        tooltip: {
+          backgroundColor: '#0d1f5c',
+          borderColor: 'rgba(21,101,192,0.3)',
+          borderWidth: 1, titleColor: '#fff', bodyColor: 'rgba(176,200,240,0.9)',
+          callbacks: { label: (c) => ` ${c.label}: ${c.parsed}%` }
+        }
+      }
+    }
+  });
+})();
+
+// BAR — idle energy wasted
+(function() {
+  const ctx = document.getElementById('barChart');
+  if (!ctx) return;
+  const shifts = ['Mon A','Mon B','Mon C','Tue A','Tue B','Tue C'];
+  const idleKwh = [8.4, 18.6, 6.2, 11.3, 22.1, 7.8];
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: shifts,
+      datasets: [{
+        label: 'Idle Energy Wasted (kWh)',
+        data: idleKwh,
+        backgroundColor: idleKwh.map(v => v > 15 ? 'rgba(220,38,38,0.75)' : 'rgba(21,101,192,0.6)'),
+        borderRadius: 5,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      animation: { duration: 1400 },
+      plugins: {
+        legend: { labels: { color: 'rgba(176,200,240,0.9)', font: { size: 10 }, boxWidth: 10 } },
+        tooltip: {
+          backgroundColor: '#0d1f5c',
+          borderColor: 'rgba(245,167,35,0.2)',
+          borderWidth: 1, titleColor: '#fff', bodyColor: 'rgba(176,200,240,0.9)',
+          callbacks: { label: (c) => ` ${c.parsed.y} kWh wasted (idle)` }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#7090b8', font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: '#7090b8', font: { size: 10 }, callback: v => v + ' kWh' }, grid: { color: 'rgba(21,101,192,0.06)' } }
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
+
